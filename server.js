@@ -1,11 +1,11 @@
-// Importation du package http de node
+// Importation du package http de node pour les req http
 const http = require("http");
 
 // Importation de l'application express depuis app.js
 const app = require("./app");
 
-// Création du serveur. Ici "app" qu'on a importé va recevoir des requêtes et donner des reponses.
-// Notre serveur retourne donc notre app express.
+// Création du serveur qui recevra les req http via app
+// Notre serveur retourne donc notre app express
 const server = http.createServer(app);
 
 // Port sur lequel va ecouter notre serveur pour chaque requete envoyé du frontend. 3000 ou var. env. si indisponibilité
