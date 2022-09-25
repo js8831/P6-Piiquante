@@ -9,7 +9,7 @@ const app = express();
 module.exports = app;
 
 // ------- ROUTEUR -------
-// Importation des routeurs
+// Importation des routeurs 
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
 
@@ -25,6 +25,9 @@ mongoose
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
+
+// ------- PATH -------
+const path = require("path")
 
 // ------- SERVEUR -------
 // ------- CORS -------
@@ -53,7 +56,9 @@ app.use((req, res, next) => {
 // Servira par ex pour les middlewares des req "post"
 app.use(express.json());
 
-// On utlise le routeur qui est exposé par sauceRoutes et qui se trouve dans le dossier router mais qu'on a importé
+// On utlise le routeur qui est exposé par sauceRoutes et qui se trouve dans le dossier router mais qu'on a importé plus haut
 // le routeur importé contient le segment final et le contrôleur a appliquer. Cela permet de structurer le code
 app.use("/api/sauces", sauceRoutes);
 app.use("/api/auth", userRoutes);
+// Ajout de la req vers le repertoire images pour pouvoir utliser le dossier
+app.use("/images", express.static(path.join(__dirname,"images")));
