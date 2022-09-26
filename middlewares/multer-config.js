@@ -26,6 +26,6 @@ const storage = multer.diskStorage({
 
 // Exportation de multer en l'appelant pour l'intégrer aux routes pour gerer les fichiers entrants
 // Concerne les fichiers uniques de type image
-module.exports = multer({ storage }).single("images");
+module.exports = multer({ storage: storage }).single("image");
 
 // Ne pas oublier de l'ajouter aux routes

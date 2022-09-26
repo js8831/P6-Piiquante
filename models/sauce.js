@@ -23,7 +23,7 @@ const sauceSchema = mongoose.Schema({
   usersDisliked: { type: Array, required: true },
 });
 
-// Exportation du schema pour pouvoir l'exploiter comme modèle dans express avec la méthode .model de mongoose
+// Exportation du schema pour pouvoir l'exploiter comme modèle dans le controleur avec la méthode .model de mongoose
 // 1er argument : le nom du modèle
 // 2 ie : le schema de données qu'on va utiliser
 module.exports = mongoose.model("Sauce", sauceSchema);
