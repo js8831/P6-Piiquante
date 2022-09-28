@@ -18,9 +18,8 @@ const sauceSchema = mongoose.Schema({
   heat: { type: Number, required: true },
   likes: { type: Number, required: true },
   dislikes: { type: Number, required: true },
-  // A confirmer pour le type
-  usersLiked: { type: Array, required: true },
-  usersDisliked: { type: Array, required: true },
+  usersLiked: { type: [String], required: true },
+  usersDisliked: { type: [String], required: true },
 });
 
 // Exportation du schema pour pouvoir l'exploiter comme modèle dans le controleur avec la méthode .model de mongoose
