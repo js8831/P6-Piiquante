@@ -1,7 +1,6 @@
 // La logique métier : la logique de chaque fonction
 
 // Importation du modele sauce pour l'utiliser dans les middlewares (les gestionnaires de routes) qu'on affectera aux routes
-// La majuscule a-t-elle un impact, comme je l'ai nommé Sauce le schema aussi ?????????? pour le différencier de sauce plus bas ?
 const Sauce = require("../models/sauce");
 
 // Importation de fs pour l'utiliser plus bas
@@ -9,16 +8,11 @@ const fs = require("fs");
 
 // POST
 exports.createSauce = function (req, res, next) {
-  // Pour signifier de parse le corp de la req qui contient un schema sauce sous forme de chaine ?????
+  // Pour signifier de parse le corp de la req qui contient un schema sauce sous forme de chaine
   const sauceObject = JSON.parse(req.body.sauce);
-  // Faut-il le supprimer l'_id,est ce que le f.e on envoie un ????????????
-  // delete sauceObject._id;
-  // D'ou provient _userId car dans le schema Sauce : il n y est pas ??????????
-  // Suppression car on ne fait pas confiance au client, on le recupère dans req.auth
-  // delete sauceObject._userId;
-  // Sauce ici fait réf a la constante ou au nom du modele exporté depuis le dossier models ???????? Je pense a la constante qui importe le schema Sauce
   const sauce = new Sauce({
     ...sauceObject,
+    // On remplace l'userId par celui recupéré dans le token grace au payload
     userId: req.auth.userId,
     // Il faut générer l'url de l'image pour l'enregistrer car multer ne fourni que le filename,
     // ne pas oublier de gerer la req vers le repertoire images sur notre serveur (app.js)
@@ -100,7 +94,7 @@ exports.getAllSauces = (req, res, next) => {
 
 // PUT
 exports.modifySauce = function (req, res, next) {
-  // Nous interrogeons (?) la req pour savoir si elle contient un champ file car cela change le format de la req (form-data+fichier ou json)
+  // Nous interrogeons (?) la req pour savoir si elle contient un champ file car cela change le format de la req (form-data+fichier ou json-fichier)
   // Si c'est le cas on execute la fct : on récupere l'obj en parsant le string et on recrée l'url de l'image sinon (:) on récupére simplement l'objet dans le  corp de la req
   const sauceObject = req.file
     ? {
@@ -110,8 +104,6 @@ exports.modifySauce = function (req, res, next) {
         }`,
       }
     : { ...req.body };
-  // On supprime ?????????? l'userID de la req par mesure de securité pour éviter que quelqu'un crée un obj a son compte et le modifie pour le réassigner à qqun d'autre
-  delete sauceObject._userId;
   // Il faut chercher cet obj dans notre bdd pour vérif si c'est le proprio de l'obj qui cherche a le modifier
   Sauce.findOne({ _id: req.params.id })
     // Si on trouve l'objet :
@@ -140,4 +132,84 @@ exports.modifySauce = function (req, res, next) {
 };
 
 // POST
-exports.likeSauce = function (req, res, next) {};
+exports.likeSauce = function (req, res, next) {
+  let like = req.body.like
+  let userId = req.body.userId
+  let sauceId = req.params.id
+  console.log(req.body);
+  // On cherche la sauce avec l'id fourni en paramètre
+  Sauce.findOne({ _id: sauceId })
+  // Cela renvoie une promesse
+    .then((sauce) => {
+      // si on like et que le front renvoie 1
+      if (like === 1) {
+        // On push l'userId recupéré dans la requete dans le tableau de string de la sauce trouvé capté par la promesse
+        sauce.usersLiked.push(userId);
+        // On update la sauce en remplaceant les 2 champs nouvellements maj
+        Sauce.updateOne(
+          { _id: sauceId },
+          {
+            sauce,
+            usersLiked: sauce.usersLiked,
+            likes: sauce.usersLiked.length,
+          }
+        )
+          .then(() => res.status(200).json({ message: "Sauce liké" }))
+          .catch((e) => res.status(400).json(e));
+          // Sinon si on dislike
+      } else if (like === -1) {
+        sauce.usersDisliked.push(userId);
+        Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            sauce,
+            usersDisliked: sauce.usersDisliked,
+            dislikes: sauce.usersDisliked.length,
+          }
+        )
+          .then(() => res.status(200).json({ message: "Sauce disliké" }))
+          .catch((e) => res.status(400).json(e));
+          // S'il n y a pas de like ou dislike
+      } else if (like === 0) {
+        // On cherche si l'userId aimait ou pas la sauce avant
+        // Pour ce faire, on cherche une correspondance d'userId entre les tableaux de strings et le corps de la req et si on trouve on renvoie l'index
+        sauceLiked = sauce.usersLiked.indexOf(userId);
+        sauceDisliked = sauce.usersDisliked.indexOf(userId);
+        // Si l'user n'aimait pas la sauce avant son vote. -1 = pas de correspondance
+        if (sauceLiked === -1) {
+          console.log("Index =",sauceDisliked)
+          // On supprime son dislike en supprimant l'userId du tableau des dislikes grace au resultat de l'index
+          // et le 1 pour une occurence
+          sauce.usersDisliked.splice(sauceDisliked, 1);
+          // et on met a jour
+          Sauce.updateOne(
+            { _id: sauceId },
+            {
+              sauce,
+              usersDisliked: sauce.usersDisliked,
+              dislikes: sauce.usersDisliked.length,
+            }
+          )
+            .then(() =>
+              res.status(200).json({ message: "Vote annulé" })
+            )
+            .catch((e) => res.status(400).json(e));
+        } else {
+          // Si l'user aimait la sauce avant son vote 
+          sauce.usersLiked.splice(sauceLiked, 1);
+          Sauce.updateOne(
+            { _id: sauceId },
+            {
+              sauce,
+              usersLiked: sauce.usersLiked,
+              likes: sauce.usersLiked.length,
+            }
+          )
+            .then(() => res.status(200).json({ message: "Vote annulé" }))
+            .catch((e) => res.status(400).json(e));
+        }
+      }
+    console.log(sauce);
+    })
+    .catch((e) => res.status(500).json(e));
+};
