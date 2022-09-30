@@ -133,83 +133,60 @@ exports.modifySauce = function (req, res, next) {
 
 // POST
 exports.likeSauce = function (req, res, next) {
-  let like = req.body.like
-  let userId = req.body.userId
-  let sauceId = req.params.id
+  let like = req.body.like;
+  let userId = req.body.userId;
+  let sauceId = req.params.id;
   console.log(req.body);
-  // On cherche la sauce avec l'id fourni en paramètre
-  Sauce.findOne({ _id: sauceId })
-  // Cela renvoie une promesse
-    .then((sauce) => {
-      // si on like et que le front renvoie 1
-      if (like === 1) {
-        // On push l'userId recupéré dans la requete dans le tableau de string de la sauce trouvé capté par la promesse
-        sauce.usersLiked.push(userId);
-        // On update la sauce en remplaceant les 2 champs nouvellements maj
-        Sauce.updateOne(
-          { _id: sauceId },
-          {
-            sauce,
-            usersLiked: sauce.usersLiked,
-            likes: sauce.usersLiked.length,
-          }
-        )
-          .then(() => res.status(200).json({ message: "Sauce liké" }))
-          .catch((e) => res.status(400).json(e));
-          // Sinon si on dislike
-      } else if (like === -1) {
-        sauce.usersDisliked.push(userId);
-        Sauce.updateOne(
-          { _id: req.params.id },
-          {
-            sauce,
-            usersDisliked: sauce.usersDisliked,
-            dislikes: sauce.usersDisliked.length,
-          }
-        )
-          .then(() => res.status(200).json({ message: "Sauce disliké" }))
-          .catch((e) => res.status(400).json(e));
-          // S'il n y a pas de like ou dislike
-      } else if (like === 0) {
-        // On cherche si l'userId aimait ou pas la sauce avant
-        // Pour ce faire, on cherche une correspondance d'userId entre les tableaux de strings et le corps de la req et si on trouve on renvoie l'index
-        sauceLiked = sauce.usersLiked.indexOf(userId);
-        sauceDisliked = sauce.usersDisliked.indexOf(userId);
-        // Si l'user n'aimait pas la sauce avant son vote. -1 = pas de correspondance
-        if (sauceLiked === -1) {
-          console.log("Index =",sauceDisliked)
-          // On supprime son dislike en supprimant l'userId du tableau des dislikes grace au resultat de l'index
-          // et le 1 pour une occurence
-          sauce.usersDisliked.splice(sauceDisliked, 1);
-          // et on met a jour
-          Sauce.updateOne(
-            { _id: sauceId },
-            {
-              sauce,
-              usersDisliked: sauce.usersDisliked,
-              dislikes: sauce.usersDisliked.length,
-            }
-          )
-            .then(() =>
-              res.status(200).json({ message: "Vote annulé" })
+
+  // Mise en place d'instructions
+  switch (like) {
+    case 1:
+      Sauce.updateOne(
+        { _id: sauceId },
+        // Utilisation d'opérateur MDB
+        { $push: { usersLiked: userId }, $inc: { likes: +1 } }
+      )
+        .then(() => res.status(200).json({ message: "Sauce aimée" }))
+        .catch((error) => res.status(400).json({ error }));
+
+      break;
+
+    case 0:
+      Sauce.findOne({ _id: sauceId })
+        .then((sauce) => {
+          if (sauce.usersLiked.includes(userId)) {
+            Sauce.updateOne(
+              { _id: sauceId },
+              { $pull: { usersLiked: userId }, $inc: { likes: -1 } }
             )
-            .catch((e) => res.status(400).json(e));
-        } else {
-          // Si l'user aimait la sauce avant son vote 
-          sauce.usersLiked.splice(sauceLiked, 1);
-          Sauce.updateOne(
-            { _id: sauceId },
-            {
-              sauce,
-              usersLiked: sauce.usersLiked,
-              likes: sauce.usersLiked.length,
-            }
-          )
-            .then(() => res.status(200).json({ message: "Vote annulé" }))
-            .catch((e) => res.status(400).json(e));
-        }
-      }
-    console.log(sauce);
-    })
-    .catch((e) => res.status(500).json(e));
+              .then(() => res.status(200).json({ message: "Aucun vote" }))
+              .catch((error) => res.status(400).json({ error }));
+          }
+          if (sauce.usersDisliked.includes(userId)) {
+            Sauce.updateOne(
+              { _id: sauceId },
+              { $pull: { usersDisliked: userId }, $inc: { dislikes: -1 } }
+            )
+              .then(() => res.status(200).json({ message: "Aucun vote" }))
+              .catch((error) => res.status(400).json({ error }));
+          }
+        })
+        .catch((error) => res.status(404).json({ error }));
+      break;
+
+    case -1:
+      Sauce.updateOne(
+        { _id: sauceId },
+        { $push: { usersDisliked: userId }, $inc: { dislikes: +1 } }
+      )
+        .then(() => {
+          res.status(200).json({ message: "Sauce non aimée" });
+        })
+        .catch((error) => res.status(400).json({ error }));
+      break;
+
+    default:
+      console.log("Une erreur est survenue ", error);
+      break;
+  }
 };
