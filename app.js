@@ -13,6 +13,12 @@ module.exports = app;
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
 
+// ------- PKG -------
+// Helmet qui configure les headers pour être moins vulnérable
+const helmet = require("helmet");
+// Importation de doten pour utiliser des var. d'environnement
+require("dotenv").config();
+
 // ------- MONGOOSE -------
 // Installation de mongoose (npm install mongoose avant)
 const mongoose = require("mongoose");
@@ -20,7 +26,7 @@ const mongoose = require("mongoose");
 // Lie la BDD avec l'API
 mongoose
   .connect(
-    "mongodb+srv://pierre-o:gb6DVDHfaczV7GCX@cluster0.n1kyldi.mongodb.net/?retryWrites=true&w=majority",
+    process.env.HIDDEN_MDB,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))
@@ -30,6 +36,8 @@ mongoose
 const path = require("path")
 
 // ------- SERVEUR -------
+// Utilisation d'helmet sur toute nos routes
+app.use(helmet());
 // ------- CORS -------
 // On configure la sécurité CORS car communication entre différent serveur
 // Il faut mettre ce middleware "general" en premier car il sera le 1er middleware executé par le serveur
@@ -62,3 +70,4 @@ app.use("/api/sauces", sauceRoutes);
 app.use("/api/auth", userRoutes);
 // Ajout de la req vers le repertoire images pour pouvoir utliser le dossier
 app.use("/images", express.static(path.join(__dirname,"images")));
+
