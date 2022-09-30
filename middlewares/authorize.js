@@ -26,6 +26,6 @@ module.exports = (req, res, next) => {
     next();
     // En cas d'erreur pour décoder le token, on se retrouve dans le catch et on renvoie une erreur
   } catch (error) {
-    res.status(401).json({ error });
+    res.status(403).json({ error });
   }
 };
