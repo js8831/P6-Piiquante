@@ -15,9 +15,13 @@ const userRoutes = require("./routes/user");
 
 // ------- PKG -------
 // Helmet qui configure les headers pour être moins vulnérable
-const helmet = require("helmet");
+// const helmet = require("helmet");
 // Importation de doten pour utiliser des var. d'environnement
 require("dotenv").config();
+// Pour recup les log des req http
+const morgan = require("morgan");
+// PARAMETRAGE PREDEF
+app.use(morgan("dev"));
 
 // ------- MONGOOSE -------
 // Installation de mongoose (npm install mongoose avant)
@@ -37,7 +41,7 @@ const path = require("path")
 
 // ------- SERVEUR -------
 // Utilisation d'helmet sur toute nos routes
-app.use(helmet());
+//app.use(helmet());
 // ------- CORS -------
 // On configure la sécurité CORS car communication entre différent serveur
 // Il faut mettre ce middleware "general" en premier car il sera le 1er middleware executé par le serveur

@@ -1,15 +1,9 @@
-// La logique métiers : pour se connecter et s'enregistrer
-// Ici on crée le token et on l'envoie au front-end lorsqu'un user se connecte
-
-// Dans le fichier auth on crée le middleware qui vérifie le token pour chaque req
-// Et on le rajoutera aux routes pour les protéger en refusant les connections non auth
-
-// Rappel : la methode .hash de bcrypt : crypte un string : le mdp. A ne pas confondre avec jwt qui encode le token
-// et peut donc être décodé avec la clé secrete !
-
 // Importation du package bcrypt
 // RAPPEL : require() est la commande permettant l'importation d'objets ou de fichiers (avec des lignes de code) qu'on met dedans
 const bcrypt = require("bcrypt");
+
+// Pour chiffrer l'email dans la bdd
+const cryptoJs = require("crypto-js");
 
 // Importation de jsonwebtoken en ayant au préalable fait npm install --save jsonwebtoken
 // Il permettra de créer des tokens et de les vérifier. Ces tokens peuvent contenir un payload personnalisé et avoir une validité limitée dans le temps
@@ -20,6 +14,10 @@ const User = require("../models/User");
 
 // La fct pour l'enregistrement des utilisateurs
 exports.signup = (req, res, next) => {
+  // Méthode de cryptage .HmacSHA256, 1er arg (l'email), 2e arg (la clé) et on converti avec .toString
+  const emailCryptojs = cryptoJs
+    .HmacSHA256(req.body.email, process.env.HIDDEN_EMAIL)
+    .toString();
   // Utilisation de la méthode .hash sur bcrypt qui renvoie une promise avec then
   // ou un catch et prend du temps cme c'est une fct async
   bcrypt
@@ -32,7 +30,7 @@ exports.signup = (req, res, next) => {
       // Création du user
       const user = new User({
         // email fourni dans le corp de la requete
-        email: req.body.email,
+        email: emailCryptojs,
         // On affecte le hash capté par la promesse au password
         password: hash,
       });
@@ -50,9 +48,12 @@ exports.signup = (req, res, next) => {
 
 // Pour la connection
 exports.login = (req, res, next) => {
+  const emailCryptojs = cryptoJs
+    .HmacSHA256(req.body.email, process.env.HIDDEN_EMAIL)
+    .toString();
   // Utilisation de la méthode .findOne de notre class User. On lui passe un objet qui va servir de filtre (selecteur)
   // Un champ "e-mail" qui correspondra à la valeur transmise par le client
-  User.findOne({ email: req.body.email })
+  User.findOne({ email: emailCryptojs })
     // Si la requete est bien passée, il faut récupérer l'enregistrement :
     .then((user) => {
       // On va interroger la bdd pour savoir SI cette adresse email est existante ou non grâce à la promesse
@@ -86,7 +87,7 @@ exports.login = (req, res, next) => {
             token: jwt.sign(
               { userId: user._id },
               // 2eme : la chaîne (clé) secrète pour l'encodage du token (à remplacer par une chaîne aléatoire beaucoup plus longue pour la production)
-              "RANDOM_TOKEN_SECRET",
+              process.env.HIDDEN_TOKEN,
               // 3eme : argument de configuration pour appliquer une expiration pour le token de 24h. L'user doit se reconnecter au bout de 24h
               { expiresIn: "24h" }
             ),
