@@ -15,7 +15,7 @@ const userRoutes = require("./routes/user");
 
 // ------- PKG -------
 // Helmet qui configure les headers pour être moins vulnérable
-// const helmet = require("helmet");
+const helmet = require("helmet");
 // Importation de doten pour utiliser des var. d'environnement
 require("dotenv").config();
 // Pour recup les log des req http
@@ -29,19 +29,24 @@ const mongoose = require("mongoose");
 
 // Lie la BDD avec l'API
 mongoose
-  .connect(
-    process.env.HIDDEN_MDB,
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  .connect(process.env.HIDDEN_MDB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
 // ------- PATH -------
-const path = require("path")
+const path = require("path");
 
 // ------- SERVEUR -------
 // Utilisation d'helmet sur toute nos routes
-//app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    // Permet de charger des photos en paramètrant les en-têtes de réponses
+  })
+);
 // ------- CORS -------
 // On configure la sécurité CORS car communication entre différent serveur
 // Il faut mettre ce middleware "general" en premier car il sera le 1er middleware executé par le serveur
