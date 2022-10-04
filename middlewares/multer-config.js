@@ -24,8 +24,21 @@ const storage = multer.diskStorage({
   },
 });
 
+const fileFilter = (req, file, callback) => {
+  const extension = MIME_TYPES[file.mimetype]; // Pour trouver le mime type du fichier uploadé
+  if (extension === "jpg" || extension === "png") {
+    callback(null, true); // S'assurer que c'est un png ou un jpg
+  } else {
+    callback("Erreur : Mauvais type de fichier", false);
+  }
+};
+
 // Exportation de multer en l'appelant pour l'intégrer aux routes pour gerer les fichiers entrants
 // Concerne les fichiers uniques de type image
-module.exports = multer({ storage: storage }).single("image");
+module.exports = multer({
+  storage: storage,
+  limits: { fileSize: 104857600 },
+  fileFilter, // Application du filtre
+}).single("image");
 
 // Ne pas oublier de l'ajouter aux routes
