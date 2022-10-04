@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
     // le 1 signifie le souhait de prendre le 2eme position car on commence à 0
     const token = req.headers.authorization.split(" ")[1];
     // 2. il faut décoder le token avec la méthode .verify de jwt en lui passant le token récupéré en 1er argument et la clé secrete en 2eme
-    const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+    const decodedToken = jwt.verify(token, process.env.TOKEN_CRYPTO_KEY);
     // Récuperation de la propriété userId aprés le décodage du token pour authentifié correctement les req (attention diff de crypté, il s'agit du payload)
     const userId = decodedToken.userId;
     // 3. Et ajout de la valeur de l'userId à l'objet req.auth qui est transmis aux routes qui vont être appelées par la suite

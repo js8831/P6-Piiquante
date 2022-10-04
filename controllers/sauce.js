@@ -42,7 +42,7 @@ exports.deleteSauce = function (req, res, next) {
       // on verifie si c'est le bon proprio
       if (sauce.userId != req.auth.userId) {
         // Si non : erreur
-        res.status(401).json({ message: "Non autorisé" });
+        res.status(403).json({ message: "Non autorisé" });
       } else {
         // Si oui, on supprime l'image du systeme de fichier en récupérant le nom
         // en splittant autour du répertoire "images" et on prend la partie qui suit [1] (ici il n y pas multer qui donne le nom de fcihier, cme pour post)
@@ -110,7 +110,7 @@ exports.modifySauce = function (req, res, next) {
     .then((sauce) => {
       // on verifie si l'useriD est diff de celui du payload et si oui : erreur, qqun essaie de modifier un obj qui lui appartient pas !
       if (sauce.userId != req.auth.userId) {
-        res.status(401).json({ message: "Non autorisé" });
+        res.status(403).json({ message: "Non autorisé" });
         // Si non et que cela concorde on utilise la :
       } else {
         // Méthode .updateOne dans notre modèle Sauce pour mettre à jour une sauce dans la bdd
@@ -143,7 +143,7 @@ exports.likeSauce = function (req, res, next) {
     case 1:
       Sauce.updateOne(
         { _id: sauceId },
-        // Utilisation d'opérateur MDB
+        // Utilisation d'opérateurs mongoose
         { $push: { usersLiked: userId }, $inc: { likes: +1 } }
       )
         .then(() => res.status(200).json({ message: "Sauce aimée" }))

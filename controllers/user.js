@@ -16,7 +16,7 @@ const User = require("../models/User");
 exports.signup = (req, res, next) => {
   // Méthode de cryptage .HmacSHA256, 1er arg (l'email), 2e arg (la clé) et on converti avec .toString
   const emailCryptojs = cryptoJs
-    .HmacSHA256(req.body.email, process.env.HIDDEN_EMAIL)
+    .HmacSHA256(req.body.email, process.env.EMAIL_CRYPTO_KEY)
     .toString();
   // Utilisation de la méthode .hash sur bcrypt qui renvoie une promise avec then
   // ou un catch et prend du temps cme c'est une fct async
@@ -49,7 +49,7 @@ exports.signup = (req, res, next) => {
 // Pour la connection
 exports.login = (req, res, next) => {
   const emailCryptojs = cryptoJs
-    .HmacSHA256(req.body.email, process.env.HIDDEN_EMAIL)
+    .HmacSHA256(req.body.email, process.env.EMAIL_CRYPTO_KEY)
     .toString();
   // Utilisation de la méthode .findOne de notre class User. On lui passe un objet qui va servir de filtre (selecteur)
   // Un champ "e-mail" qui correspondra à la valeur transmise par le client
@@ -87,7 +87,7 @@ exports.login = (req, res, next) => {
             token: jwt.sign(
               { userId: user._id },
               // 2eme : la chaîne (clé) secrète pour l'encodage du token (à remplacer par une chaîne aléatoire beaucoup plus longue pour la production)
-              process.env.HIDDEN_TOKEN,
+              process.env.TOKEN_CRYPTO_KEY,
               // 3eme : argument de configuration pour appliquer une expiration pour le token de 24h. L'user doit se reconnecter au bout de 24h
               { expiresIn: "24h" }
             ),
