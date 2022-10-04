@@ -18,10 +18,13 @@ const userRoutes = require("./routes/user");
 const helmet = require("helmet");
 // Importation de doten pour utiliser des var. d'environnement
 require("dotenv").config();
-// Pour recup les log des req http
+// Pour recup les log des req http pour faire du monitoring
 const morgan = require("morgan");
-// PARAMETRAGE PREDEF
+// Paramètrage prédéfini
 app.use(morgan("dev"));
+// express-mongo-sanitize pour se protéger des attaques par injections dans les inputs
+const mongoSanitize = require("express-mongo-sanitize");
+app.use(mongoSanitize());
 
 // ------- MONGOOSE -------
 // Installation de mongoose (npm install mongoose avant)
@@ -29,7 +32,7 @@ const mongoose = require("mongoose");
 
 // Lie la BDD avec l'API
 mongoose
-  .connect(process.env.HIDDEN_MDB, {
+  .connect(process.env.SECRET_DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
