@@ -14,9 +14,9 @@ const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
 
 // ------- PKG -------
-// Helmet qui configure les headers pour être moins vulnérable
+// Importation d'Helmet qui configure les headers pour être moins vulnérable
 const helmet = require("helmet");
-// Importation de doten pour utiliser des var. d'environnement
+// Importation de dotenv pour utiliser des var. d'environnement
 require("dotenv").config();
 // Pour recup les log des req http pour faire du monitoring
 const morgan = require("morgan");

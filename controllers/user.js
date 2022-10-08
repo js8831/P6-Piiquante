@@ -63,7 +63,6 @@ exports.login = (req, res, next) => {
           .status(401)
           .json({ message: "Paire login/mot de passe incorrecte" });
       }
-      // pas besoin du else, il est sous entendu ici apparemment (mais comment ??????????)
       // Si c'est true et donc que l'adresse email existe, on compare les mdp (celui fourni pas le clt et celui dans la bdd retourné par la promesse "user")
       // avec la méthode .compare de bcrypt. C'est également une promesse qui va vérifier et prendre du temps
       bcrypt
@@ -75,11 +74,12 @@ exports.login = (req, res, next) => {
               .status(401)
               .json({ message: "Paire login/mot de passe incorrecte" });
           }
-          // Si oui on renvoie une réponse 200 contenant l'id et le token
-          // userId correspond a l'une des clés du schema User ???????? et user._Id est ce l'id crée par mdb pour identifié un user mais ne faisant pas partie du schema User ?????? car on ne veut pas l'userid renseigné par le client qui pourrait etre modifié par lui meme ?
+          // Si oui on renvoie une réponse 200 contenant l'id et le token crée
+          // userId correspond à une des clés du schema Sauce et user._Id est l'id crée par mdb. (le user devant _id est récupéré avec la promesse plus haut)
           // Ce sont des informations nécessaires à l'authentification des req qui seront émises
           // par la suite par notre client
           res.status(200).json({
+            // Ici on ne veut pas l'userId renseigné par le client qui pourrait etre modifié par lui même
             userId: user._id,
             // Token qui sera envoyé et vérifié a chaque req émise par le front-end afin de vérifier la bonne authentification auprés de l' API
             // Appel de la méthode .sign du package jwt pour chiffrer un nouveau token

@@ -1,6 +1,7 @@
 const passwordSchema = require("../models/password");
 
 module.exports = (req, res, next) => {
+  // Si le passeword renseigné ne correspond au schema
   if (!passwordSchema.validate(req.body.password)) {
     res.status(400).json({
       message:

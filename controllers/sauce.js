@@ -140,10 +140,14 @@ exports.likeSauce = function (req, res, next) {
 
   // Mise en place d'instructions
   switch (like) {
+    // si like = 1
     case 1:
+      // On met à jour Sauce
       Sauce.updateOne(
+        // Celle dont la clé _id à pour valeur sauceId
         { _id: sauceId },
-        // Utilisation d'opérateurs mongoose
+        // Utilisation d'opérateurs mongoose : on incrémente de 1 dans "likes" et dans l'array "userLiked" on met l'userId qui à like (en string)
+        // Grâce a ce qui est renvoyé par le front-end
         { $push: { usersLiked: userId }, $inc: { likes: +1 } }
       )
         .then(() => res.status(200).json({ message: "Sauce aimée" }))
@@ -152,8 +156,11 @@ exports.likeSauce = function (req, res, next) {
       break;
 
     case 0:
+      // dans ce cas là, on cherche la sauce
       Sauce.findOne({ _id: sauceId })
         .then((sauce) => {
+          // Si on la trouve cela renvoie une promesse et on update -1 à condition qu'un user avait like la sauce
+          // pull c'est pour enlever du tableau l'userId qu'avait like auparavant
           if (sauce.usersLiked.includes(userId)) {
             Sauce.updateOne(
               { _id: sauceId },

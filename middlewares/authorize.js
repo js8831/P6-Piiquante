@@ -15,14 +15,15 @@ module.exports = (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];
     // 2. il faut décoder le token avec la méthode .verify de jwt en lui passant le token récupéré en 1er argument et la clé secrete en 2eme
     const decodedToken = jwt.verify(token, process.env.TOKEN_CRYPTO_KEY);
+    console.log("token", token);
     // Récuperation de la propriété userId aprés le décodage du token pour authentifié correctement les req (attention diff de crypté, il s'agit du payload)
     const userId = decodedToken.userId;
     // 3. Et ajout de la valeur de l'userId à l'objet req.auth qui est transmis aux routes qui vont être appelées par la suite
     req.auth = {
       userId: userId,
     };
-    // C'est pour transmettre le token et créer un lien. Sinon les middlewares dans les routes s'executent à la chaine sans forcément mettre next
-    // ou pour dire que si auth est ok on fait next sinon cela ne passe pas au middleware suivant ????? le 2eme je pense
+    // les middlewares dans les routes s'executent à la chaine sans forcément mettre next
+    // Mais si on le met, c'est pour dire que si auth est OK alors on fait next, sinon cela ne passe pas au middleware suivant (je pense)
     next();
     // En cas d'erreur pour décoder le token, on se retrouve dans le catch et on renvoie une erreur
   } catch (error) {
